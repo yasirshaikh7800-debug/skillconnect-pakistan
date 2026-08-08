@@ -3,6 +3,8 @@ import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../../database/prisma.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
+import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { UserRole, UserStatus } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { authenticator } from 'otplib';
@@ -62,7 +64,7 @@ export class AuthService {
               providerProfile: {
                 create: {
                   cnicNumber: dto.cnicNumber,
-                  isVerified: false, // Requires admin review
+                  isVerified: false,
                 },
               },
             }
@@ -137,6 +139,39 @@ export class AuthService {
       },
       ...tokens,
     };
+  }
+
+  async refreshToken(dto: RefreshTokenDto) {
+    try {
+      const payload = await this.jwtService.verifyAsync(dto.refreshToken);
+      const user = await this.prisma.user.findUnique({ where: { id: payload.sub } });
+
+      if (!user || user.status === UserStatus.SUSPENDED) {
+        throw new UnauthorizedException('Invalid refresh token');
+      }
+
+      const tokens = this.generateTokens(user.id, user.email, user.role);
+      return tokens;
+    } catch {
+      throw new UnauthorizedException('Invalid refresh token');
+    }
+  }
+
+  async changePassword(userId: string, dto: ChangePasswordDto) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user || !user.passwordHash) {
+      throw new UnauthorizedException('User account not found');
+    }
+
+    const isCurrentPasswordValid = await bcrypt.compare(dto.currentPassword, user.passwordHash);
+    if (!isCurrentPasswordValid) {
+      throw new UnauthorizedException('Current password is incorrect');
+    }
+
+    const passwordHash = await bcrypt.hash(dto.newPassword, 10);
+    await this.prisma.user.update({ where: { id: userId }, data: { passwordHash } });
+
+    return { success: true, message: 'Password updated successfully' };
   }
 
   async generate2FaSecret(userId: string) {

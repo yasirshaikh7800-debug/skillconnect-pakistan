@@ -2,41 +2,64 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useTheme } from '@/context/ThemeContext';
-import { Sun, Moon, MapPin, Search, User, ShieldCheck, Menu, X } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
+import { Sun, Moon, MapPin, Search, ShieldCheck, Menu, X, LogOut, User } from 'lucide-react';
 
 export function Navbar() {
   const { theme, toggleTheme } = useTheme();
+  const { user, isAuthenticated, logout, isLoading } = useAuth();
+  const router = useRouter();
   const [selectedCity, setSelectedCity] = useState('Karachi');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const dashboardHref =
+    user?.role === 'PROVIDER'
+      ? '/dashboard/provider'
+      : user?.role === 'ADMIN'
+        ? '/admin'
+        : '/dashboard/customer';
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    const params = new URLSearchParams({ city: selectedCity });
+    if (searchQuery.trim()) params.set('q', searchQuery.trim());
+    router.push(`/services?${params.toString()}`);
+  };
+
+  const handleLogout = () => {
+    logout();
+    router.push('/');
+    setMobileMenuOpen(false);
+  };
 
   return (
-    <nav className="sticky top-0 z-50 glass border-b border-slate-200 dark:border-slate-800 transition-colors">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          {/* Logo */}
-          <div className="flex items-center space-x-3">
-            <Link href="/" className="flex items-center space-x-2">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-emerald-400 flex items-center justify-center shadow-lg shadow-brand-500/20">
-                <ShieldCheck className="w-6 h-6 text-white" />
+    <nav className="sticky top-0 z-50 border-b border-white/40 bg-white/70 backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/70">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="flex h-16 items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Link href="/" className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-600 via-emerald-500 to-cyan-500 shadow-lg shadow-brand-500/20">
+                <ShieldCheck className="h-6 w-6 text-white" />
               </div>
               <div className="flex flex-col">
-                <span className="font-bold text-xl tracking-tight text-slate-900 dark:text-white">
+                <span className="text-lg font-semibold tracking-tight text-slate-900 dark:text-white">
                   SkillConnect<span className="text-brand-500">.pk</span>
                 </span>
-                <span className="text-[10px] uppercase font-semibold tracking-widest text-slate-500 dark:text-slate-400">
+                <span className="text-[10px] font-semibold uppercase tracking-[0.3em] text-slate-500 dark:text-slate-400">
                   Pakistan Services
                 </span>
               </div>
             </Link>
 
-            {/* City Selector */}
-            <div className="hidden md:flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800/80 text-sm text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
-              <MapPin className="w-4 h-4 text-brand-500" />
+            <div className="hidden items-center gap-2 rounded-full border border-slate-200 bg-white/70 px-3 py-2 text-sm text-slate-700 shadow-sm dark:border-slate-800 dark:bg-slate-900/70 dark:text-slate-300 md:flex">
+              <MapPin className="h-4 w-4 text-brand-500" />
               <select
                 value={selectedCity}
                 onChange={(e) => setSelectedCity(e.target.value)}
-                className="bg-transparent font-medium cursor-pointer focus:outline-none"
+                className="bg-transparent font-medium outline-none"
               >
                 <option value="Karachi">Karachi</option>
                 <option value="Lahore">Lahore</option>
@@ -48,115 +71,101 @@ export function Navbar() {
             </div>
           </div>
 
-          {/* Search Quick Bar */}
-          <div className="hidden lg:flex items-center flex-1 max-w-md mx-8">
-            <div className="relative w-full">
+          <form onSubmit={handleSearch} className="hidden flex-1 items-center px-6 lg:flex">
+            <div className="relative w-full max-w-md">
               <input
                 type="text"
-                placeholder="Search electricians, plumbers, AC repair in PKR..."
-                className="w-full pl-10 pr-4 py-2 text-sm rounded-full bg-slate-100 dark:bg-slate-800/90 text-slate-900 dark:text-slate-100 placeholder-slate-400 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-500"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search electricians, plumbers, tutors..."
+                aria-label="Search services"
+                className="w-full rounded-full border border-slate-200 bg-white/80 py-2.5 pl-10 pr-4 text-sm text-slate-900 placeholder-slate-400 outline-none ring-0 transition focus:border-brand-500 dark:border-slate-800 dark:bg-slate-900/80 dark:text-slate-100"
               />
-              <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-2.5" />
+              <Search className="absolute left-3.5 top-2.5 h-4 w-4 text-slate-400" />
             </div>
-          </div>
+          </form>
 
-          {/* Right Navigation & Controls */}
-          <div className="hidden md:flex items-center space-x-4">
-            <Link
-              href="/services"
-              className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-brand-500 transition-colors"
-            >
+          <div className="hidden items-center gap-3 md:flex">
+            <Link href="/services" className="text-sm font-medium text-slate-600 transition hover:text-brand-500 dark:text-slate-300">
               Services
             </Link>
-            <Link
-              href="/search"
-              className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-brand-500 transition-colors"
-            >
-              Find Workers
-            </Link>
-            <Link
-              href="/dashboard/customer"
-              className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-brand-500 transition-colors"
-            >
-              Dashboard
-            </Link>
+            {isAuthenticated && (
+              <Link href={dashboardHref} className="text-sm font-medium text-slate-600 transition hover:text-brand-500 dark:text-slate-300">
+                Dashboard
+              </Link>
+            )}
 
-            {/* Dark/Light Mode Toggle */}
             <button
               onClick={toggleTheme}
-              className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-brand-500 transition-colors"
+              className="rounded-full border border-slate-200 bg-white/70 p-2 text-slate-600 transition hover:text-brand-500 dark:border-slate-800 dark:bg-slate-900/70 dark:text-slate-300"
               title="Toggle Theme"
+              aria-label="Toggle color theme"
             >
-              {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+              {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
             </button>
 
-            {/* Login / Join CTA */}
-            <Link
-              href="/login"
-              className="text-sm font-semibold text-slate-700 dark:text-slate-200 hover:text-brand-500 px-3 py-2"
-            >
-              Log In
-            </Link>
-            <Link
-              href="/register"
-              className="text-sm font-semibold text-white bg-brand-600 hover:bg-brand-500 px-4 py-2 rounded-lg shadow-md shadow-brand-500/20 transition-all"
-            >
-              Become a Provider
-            </Link>
+            {!isLoading && isAuthenticated ? (
+              <div className="flex items-center gap-3">
+                <span className="flex items-center gap-1.5 text-sm text-slate-600 dark:text-slate-300">
+                  <User className="h-4 w-4" />
+                  {user?.profile?.firstName || user?.email}
+                </span>
+                <button
+                  onClick={handleLogout}
+                  className="flex items-center gap-1.5 text-sm font-medium text-slate-600 transition hover:text-red-500 dark:text-slate-300"
+                >
+                  <LogOut className="h-4 w-4" />
+                  Log Out
+                </button>
+              </div>
+            ) : (
+              <>
+                <Link href="/login" className="px-3 py-2 text-sm font-semibold text-slate-700 transition hover:text-brand-500 dark:text-slate-200">
+                  Log In
+                </Link>
+                <Link href="/register?role=PROVIDER" className="rounded-full bg-brand-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-brand-500/20 transition hover:bg-brand-500">
+                  Become a Provider
+                </Link>
+              </>
+            )}
           </div>
 
-          {/* Mobile Menu Toggle */}
-          <div className="flex md:hidden items-center space-x-2">
-            <button
-              onClick={toggleTheme}
-              className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300"
-            >
-              {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+          <div className="flex items-center gap-2 md:hidden">
+            <button onClick={toggleTheme} className="rounded-full border border-slate-200 bg-white/70 p-2 text-slate-600 dark:border-slate-800 dark:bg-slate-900/70 dark:text-slate-300">
+              {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
             </button>
-            <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300"
-            >
-              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="rounded-full border border-slate-200 bg-white/70 p-2 text-slate-600 dark:border-slate-800 dark:bg-slate-900/70 dark:text-slate-300" aria-label="Toggle navigation menu">
+              {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
             </button>
           </div>
         </div>
       </div>
 
-      {/* Mobile Drawer */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-b border-slate-200 dark:border-slate-800 bg-slate-900 px-4 pt-2 pb-6 space-y-3">
-          <Link
-            href="/services"
-            className="block text-slate-300 hover:text-brand-400 font-medium py-2"
-          >
-            Services
-          </Link>
-          <Link
-            href="/search"
-            className="block text-slate-300 hover:text-brand-400 font-medium py-2"
-          >
-            Find Workers
-          </Link>
-          <Link
-            href="/dashboard/customer"
-            className="block text-slate-300 hover:text-brand-400 font-medium py-2"
-          >
-            Dashboard
-          </Link>
-          <div className="pt-2 flex flex-col space-y-2">
-            <Link
-              href="/login"
-              className="w-full text-center py-2.5 rounded-lg border border-slate-700 text-white font-medium"
-            >
-              Log In
+        <div className="border-t border-slate-200 bg-slate-950/95 px-4 py-4 md:hidden">
+          <div className="space-y-3">
+            <Link href="/services" className="block py-2 font-medium text-slate-300 transition hover:text-brand-400">
+              Services
             </Link>
-            <Link
-              href="/register"
-              className="w-full text-center py-2.5 rounded-lg bg-brand-600 text-white font-semibold shadow"
-            >
-              Register as Provider
-            </Link>
+            {isAuthenticated && (
+              <Link href={dashboardHref} className="block py-2 font-medium text-slate-300 transition hover:text-brand-400">
+                Dashboard
+              </Link>
+            )}
+            {isAuthenticated ? (
+              <button onClick={handleLogout} className="w-full rounded-2xl border border-slate-700 py-2.5 font-medium text-white">
+                Log Out
+              </button>
+            ) : (
+              <>
+                <Link href="/login" className="block rounded-2xl border border-slate-700 py-2.5 text-center font-medium text-white">
+                  Log In
+                </Link>
+                <Link href="/register?role=PROVIDER" className="block rounded-2xl bg-brand-600 py-2.5 text-center font-semibold text-white">
+                  Register as Provider
+                </Link>
+              </>
+            )}
           </div>
         </div>
       )}

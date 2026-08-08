@@ -60,36 +60,94 @@ model User {
 
   profile             Profile?
   providerProfile     ProviderProfile?
-  customerBookings    Booking[]     @relation("CustomerBookings")
-  providerBookings    Booking[]     @relation("ProviderBookings")
-  reviewsGiven        Review[]      @relation("Reviewer")
-  reviewsReceived     Review[]      @relation("ProviderReviews")
-  chatRoomsAsCustomer ChatRoom[]   @relation("ChatCustomer")
-  chatRoomsAsProvider ChatRoom[]   @relation("ChatProvider")
-  sentMessages        ChatMessage[] @relation("SentMessages")
+  customerBookings    Booking[]         @relation("CustomerBookings")
+  providerBookings    Booking[]         @relation("ProviderBookings")
+  reviewsGiven        Review[]          @relation("Reviewer")
+  reviewsReceived     Review[]          @relation("ProviderReviews")
+  chatRoomsAsCustomer ChatRoom[]        @relation("ChatCustomer")
+  chatRoomsAsProvider ChatRoom[]        @relation("ChatProvider")
+  sentMessages        ChatMessage[]     @relation("SentMessages")
   payments            Payment[]
   wallet              Wallet?
   auditLogs           AuditLog[]
+  ownedCompanies      Company[]         @relation("CompanyOwner")
 
   @@map("users")
 }
 
 model Profile {
+  id          String   @id @default(uuid())
+  userId      String   @unique
+  firstName   String
+  lastName    String
+  city        String
+  address     String?
+  provinceId  String?
+  cityId      String?
+  districtId  String?
+  latitude    Float?
+  longitude   Float?
+  bio         String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user     User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  province Province?  @relation(fields: [provinceId], references: [id], onDelete: SetNull)
+  cityRef  City?      @relation(fields: [cityId], references: [id], onDelete: SetNull)
+  district District?  @relation(fields: [districtId], references: [id], onDelete: SetNull)
+
+  @@map("profiles")
+}
+
+model Province {
   id        String   @id @default(uuid())
-  userId    String   @unique
-  firstName String
-  lastName  String
-  city      String
-  address   String?
-  latitude  Float?
-  longitude Float?
-  bio       String?
+  name      String   @unique
+  slug      String   @unique
+  code      String   @unique
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  cities    City[]
+  profiles  Profile[]
+  companies Company[]
 
-  @@map("profiles")
+  @@map("provinces")
+}
+
+model City {
+  id          String   @id @default(uuid())
+  provinceId  String
+  name        String
+  slug        String
+  isMajor     Boolean  @default(false)
+  latitude    Float?
+  longitude   Float?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  province   Province   @relation(fields: [provinceId], references: [id], onDelete: Restrict)
+  districts  District[]
+  profiles   Profile[]
+  companies  Company[]
+
+  @@unique([provinceId, name])
+  @@map("cities")
+}
+
+model District {
+  id        String   @id @default(uuid())
+  cityId    String
+  name      String
+  slug      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  city      City      @relation(fields: [cityId], references: [id], onDelete: Restrict)
+  profiles  Profile[]
+  companies Company[]
+
+  @@unique([cityId, name])
+  @@map("districts")
 }
 
 model ProviderProfile {
@@ -101,16 +159,42 @@ model ProviderProfile {
   rating           Float     @default(0.0)
   totalReviews     Int       @default(0)
   serviceRadiusKm  Float     @default(15.0)
-  availabilityJson String?   // Stores weekly schedules in JSON format
+  availabilityJson String?
   cnicFrontUrl     String?
   cnicBackUrl      String?
+  companyId        String?
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
 
   user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  company  Company?  @relation(fields: [companyId], references: [id], onDelete: SetNull)
   services Service[]
 
   @@map("provider_profiles")
+}
+
+model Company {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  slug        String   @unique
+  description String?
+  ownerId     String
+  provinceId  String?
+  cityId      String?
+  districtId  String?
+  categoryId  String?
+  isVerified  Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  owner     User             @relation("CompanyOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  province  Province?        @relation(fields: [provinceId], references: [id], onDelete: SetNull)
+  city      City?            @relation(fields: [cityId], references: [id], onDelete: SetNull)
+  district  District?        @relation(fields: [districtId], references: [id], onDelete: SetNull)
+  category  Category?        @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  providers ProviderProfile[]
+
+  @@map("companies")
 }
 
 model Category {
@@ -123,12 +207,14 @@ model Category {
   updatedAt   DateTime  @updatedAt
 
   services Service[]
+  companies Company[]
 
   @@map("categories")
 }
 
 model Service {
   id              String   @id @default(uuid())
+  slug            String   @unique @default(cuid())
   providerId      String
   categoryId      String
   title           String
@@ -148,7 +234,7 @@ model Service {
 
 model Booking {
   id              String        @id @default(uuid())
-  bookingCode     String        @unique // e.g. SCPK-89210
+  bookingCode     String        @unique
   customerId      String
   providerId      String
   serviceId       String
@@ -181,7 +267,7 @@ model Review {
   bookingId  String   @unique
   reviewerId String
   providerId String
-  rating     Int      // 1 to 5
+  rating     Int
   comment    String
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt

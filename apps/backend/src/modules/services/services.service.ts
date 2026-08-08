@@ -17,13 +17,30 @@ export class ServicesService {
   }
 
   async getServices(query: FilterServicesDto) {
-    const { categorySlug, city, search } = query;
+    const { categorySlug, city, search, provinceSlug, citySlug, serviceId, minPrice, maxPrice, minRating } = query;
+
+    const priceFilter = {
+      ...(minPrice !== undefined ? { gte: minPrice } : {}),
+      ...(maxPrice !== undefined ? { lte: maxPrice } : {}),
+    };
+
+    const province = provinceSlug
+      ? await this.prisma.province.findUnique({ where: { slug: provinceSlug }, select: { id: true } })
+      : null;
+    const matchedCity = citySlug
+      ? await this.prisma.city.findFirst({ where: { slug: citySlug }, select: { id: true } })
+      : null;
 
     const services = await this.prisma.service.findMany({
       where: {
         isAvailable: true,
         ...(categorySlug ? { category: { slug: categorySlug } } : {}),
-        ...(city ? { provider: { user: { profile: { city: { equals: city, mode: 'insensitive' } } } } } : {}),
+        ...(province?.id ? { provider: { user: { profile: { provinceId: province.id } } } } : {}),
+        ...(matchedCity?.id ? { provider: { user: { profile: { cityId: matchedCity.id } } } } : {}),
+        ...(city ? { provider: { user: { profile: { city: { contains: city, mode: 'insensitive' } } } } } : {}),
+        ...(serviceId ? { id: serviceId } : {}),
+        ...(Object.keys(priceFilter).length ? { basePrice: priceFilter } : {}),
+        ...(minRating !== undefined ? { provider: { rating: { gte: minRating } } } : {}),
         ...(search
           ? {
               OR: [
@@ -43,7 +60,17 @@ export class ServicesService {
                 email: true,
                 phone: true,
                 avatarUrl: true,
-                profile: true,
+                profile: {
+                  select: {
+                    firstName: true,
+                    lastName: true,
+                    city: true,
+                    address: true,
+                    latitude: true,
+                    longitude: true,
+                    bio: true,
+                  },
+                },
               },
             },
           },
@@ -68,7 +95,17 @@ export class ServicesService {
                 email: true,
                 phone: true,
                 avatarUrl: true,
-                profile: true,
+                profile: {
+                  select: {
+                    firstName: true,
+                    lastName: true,
+                    city: true,
+                    address: true,
+                    latitude: true,
+                    longitude: true,
+                    bio: true,
+                  },
+                },
               },
             },
           },
