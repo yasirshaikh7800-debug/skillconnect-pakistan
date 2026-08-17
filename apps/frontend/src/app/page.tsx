@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import Link from 'next/link';
 import { motion } from 'framer-motion';
@@ -17,7 +17,7 @@ import {
   Star,
   CheckCircle2,
   BadgeCheck,
-  House,
+  Home,
   TrendingUp,
   Clock3,
   ChevronRight,
@@ -118,7 +118,7 @@ export default function HomePage() {
 
                   <div className="mt-4 grid gap-3">
                     {[
-                      { title: 'Premium AC servicing', price: 'PKR 2,500', caption: 'Fast response • Verified specialist' },
+                      { title: 'Premium AC servicing', price: 'PKR 2,500', caption: 'Fast response â€¢ Verified specialist' },
                       { title: 'Home electrical inspection', price: 'PKR 1,800', caption: 'Safe & certified' },
                     ].map((item) => (
                       <div key={item.title} className="rounded-2xl border border-white/10 bg-white/5 p-4">
@@ -228,12 +228,12 @@ export default function HomePage() {
                 <div className="mt-4 flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
                   <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
                   <span>{worker.rating}</span>
-                  <span className="text-slate-400">•</span>
+                  <span className="text-slate-400">â€¢</span>
                   <span>{worker.location}</span>
                 </div>
                 <div className="mt-5 flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
                   <BadgeCheck className="h-4 w-4 text-emerald-500" />
-                  <span>CNIC verified • 8+ years experience</span>
+                  <span>CNIC verified â€¢ 8+ years experience</span>
                 </div>
               </motion.article>
             ))}
@@ -307,7 +307,7 @@ export default function HomePage() {
                     <Star key={index} className="h-4 w-4 fill-current" />
                   ))}
                 </div>
-                <p className="mt-4 text-lg leading-8 text-slate-700 dark:text-slate-300">“{item.quote}”</p>
+                <p className="mt-4 text-lg leading-8 text-slate-700 dark:text-slate-300">â€œ{item.quote}â€</p>
                 <div className="mt-5">
                   <p className="font-semibold text-slate-900 dark:text-white">{item.name}</p>
                   <p className="text-sm text-slate-500">{item.title}</p>
@@ -333,7 +333,7 @@ export default function HomePage() {
 
       <footer className="border-t border-slate-200 bg-white/70 py-10 dark:border-slate-800 dark:bg-slate-950/70">
         <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 text-sm text-slate-600 dark:text-slate-400 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
-          <p>SkillConnect.pk — premium local services for homes and businesses across Pakistan.</p>
+          <p>SkillConnect.pk â€” premium local services for homes and businesses across Pakistan.</p>
           <div className="flex items-center gap-4">
             <Link href="/services" className="transition hover:text-brand-500">Services</Link>
             <Link href="/register?role=PROVIDER" className="transition hover:text-brand-500">Join as provider</Link>

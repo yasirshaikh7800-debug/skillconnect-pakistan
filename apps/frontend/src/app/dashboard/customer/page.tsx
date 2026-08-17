@@ -97,3 +97,8 @@ export default function CustomerDashboardPage() {
               </motion.div>
             );
           })}
+        </div>
+      </div>
+    </AuthGuard>
+  );
+}
