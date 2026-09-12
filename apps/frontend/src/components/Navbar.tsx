@@ -3,7 +3,8 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useTheme } from '@/context/ThemeContext';
-import { Sun, Moon, MapPin, Search, User, ShieldCheck, Menu, X } from 'lucide-react';
+import { Sun, Moon, Search, ShieldCheck, Menu, X, Sparkles } from 'lucide-react';
+import CitySearchSelect from '@/components/CitySearchSelect';
 
 export function Navbar() {
   const { theme, toggleTheme } = useTheme();
@@ -31,20 +32,12 @@ export function Navbar() {
             </Link>
 
             {/* City Selector */}
-            <div className="hidden md:flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800/80 text-sm text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
-              <MapPin className="w-4 h-4 text-brand-500" />
-              <select
+            <div className="hidden md:flex items-center">
+              <CitySearchSelect
+                compact
                 value={selectedCity}
-                onChange={(e) => setSelectedCity(e.target.value)}
-                className="bg-transparent font-medium cursor-pointer focus:outline-none"
-              >
-                <option value="Karachi">Karachi</option>
-                <option value="Lahore">Lahore</option>
-                <option value="Islamabad">Islamabad</option>
-                <option value="Rawalpindi">Rawalpindi</option>
-                <option value="Faisalabad">Faisalabad</option>
-                <option value="Multan">Multan</option>
-              </select>
+                onChange={setSelectedCity}
+              />
             </div>
           </div>
 
@@ -62,6 +55,13 @@ export function Navbar() {
 
           {/* Right Navigation & Controls */}
           <div className="hidden md:flex items-center space-x-4">
+            <Link
+              href="/ai-hub"
+              className="text-sm font-bold text-emerald-600 dark:text-emerald-400 hover:text-emerald-500 transition-colors flex items-center space-x-1.5 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30"
+            >
+              <Sparkles className="w-3.5 h-3.5 animate-pulse text-emerald-500" />
+              <span>AI Career Hub</span>
+            </Link>
             <Link
               href="/services"
               className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-brand-500 transition-colors"
@@ -126,6 +126,13 @@ export function Navbar() {
       {/* Mobile Drawer */}
       {mobileMenuOpen && (
         <div className="md:hidden border-b border-slate-200 dark:border-slate-800 bg-slate-900 px-4 pt-2 pb-6 space-y-3">
+          <Link
+            href="/ai-hub"
+            className="block text-emerald-400 hover:text-emerald-300 font-bold py-2 flex items-center space-x-2"
+          >
+            <Sparkles className="w-4 h-4" />
+            <span>AI Career Hub</span>
+          </Link>
           <Link
             href="/services"
             className="block text-slate-300 hover:text-brand-400 font-medium py-2"

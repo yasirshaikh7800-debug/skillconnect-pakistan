@@ -1,0 +1,8 @@
+{
+  "name": "SkillConnect Pakistan",
+  "description": "Connecting Pakistan with trusted local skilled service providers and artisans.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

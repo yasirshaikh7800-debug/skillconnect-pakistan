@@ -1,73 +1,61 @@
 import { PrismaClient, UserRole, UserStatus } from '@prisma/client';
-import * as bcrypt from 'bcrypt';
+import * as bcrypt from 'bcryptjs';
+import { PAKISTAN_CITIES_FULL } from '../../frontend/src/lib/citiesData';
+import { ALL_CATEGORIES, ALL_100_SERVICES } from '../../frontend/src/lib/servicesData';
 
 const prisma = new PrismaClient();
 
 async function main() {
   console.log('Seeding SkillConnect Pakistan database...');
 
-  // 1. Seed Categories
-  const categories = [
-    {
-      name: 'Electrical & Wiring',
-      slug: 'electrical-wiring',
-      description: 'Licensed electricians for UPS, solar inverters, short-circuits, and home wiring.',
-      iconUrl: '/icons/electrician.svg',
-    },
-    {
-      name: 'Plumbing & Pipework',
-      slug: 'plumbing-pipework',
-      description: 'Expert plumbers for water pump fitting, leak repairs, and bathroom fixtures.',
-      iconUrl: '/icons/plumbing.svg',
-    },
-    {
-      name: 'AC Repair & Servicing',
-      slug: 'ac-repair-servicing',
-      description: 'Split & Inverter AC gas charging, deep master cleaning, and compressor repair.',
-      iconUrl: '/icons/ac-repair.svg',
-    },
-    {
-      name: 'Solar & Inverter Setup',
-      slug: 'solar-inverter-setup',
-      description: 'Solar panel installation, net metering assistance, and battery maintenance.',
-      iconUrl: '/icons/solar.svg',
-    },
-    {
-      name: 'Home Cleaning & Janitorial',
-      slug: 'home-cleaning',
-      description: 'Full house deep cleaning, sofa shampooing, and water tank cleaning.',
-      iconUrl: '/icons/cleaning.svg',
-    },
-    {
-      name: 'Home Tutors & Test Prep',
-      slug: 'home-tutors',
-      description: 'O/A Level, Matric, FSc, and university qualified home and online tutors.',
-      iconUrl: '/icons/tutor.svg',
-    },
-    {
-      name: 'Carpentry & Furniture',
-      slug: 'carpentry-furniture',
-      description: 'Custom furniture repair, door lock fitting, and kitchen cabinet assembly.',
-      iconUrl: '/icons/carpenter.svg',
-    },
-    {
-      name: 'Auto Mechanic & Breakdown',
-      slug: 'auto-mechanic',
-      description: 'Mobile mechanic service, car battery jumpstart, and computer diagnostics.',
-      iconUrl: '/icons/mechanic.svg',
-    },
-  ];
-
-  for (const cat of categories) {
-    await prisma.category.upsert({
-      where: { slug: cat.slug },
-      update: cat,
-      create: cat,
+  // 1. Seed 399 Pakistani Cities
+  console.log(`Seeding ${PAKISTAN_CITIES_FULL.length} Pakistani Cities...`);
+  for (const city of PAKISTAN_CITIES_FULL) {
+    const slug = city.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    await prisma.city.upsert({
+      where: { name: city.name },
+      update: {
+        district: city.district,
+        division: city.division || city.district,
+        province: city.province,
+        latitude: city.latitude,
+        longitude: city.longitude,
+        isActive: city.isActive,
+      },
+      create: {
+        name: city.name,
+        district: city.district,
+        division: city.division || city.district,
+        province: city.province,
+        latitude: city.latitude,
+        longitude: city.longitude,
+        isActive: city.isActive,
+      },
     });
   }
-  console.log('Service categories seeded.');
+  const cityCount = await prisma.city.count();
+  console.log(`Database Cities Count: ${cityCount}`);
 
-  // 2. Seed Admin User
+  // 2. Seed 10 Service Categories
+  console.log(`Seeding ${ALL_CATEGORIES.length} Categories...`);
+  for (const cat of ALL_CATEGORIES) {
+    await prisma.category.upsert({
+      where: { slug: cat.slug },
+      update: {
+        name: cat.name,
+        description: cat.description,
+      },
+      create: {
+        name: cat.name,
+        slug: cat.slug,
+        description: cat.description,
+      },
+    });
+  }
+  const categoryCount = await prisma.category.count();
+  console.log(`Database Categories Count: ${categoryCount}`);
+
+  // 3. Seed Admin User
   const adminPassword = await bcrypt.hash('AdminPass@123', 10);
   const admin = await prisma.user.upsert({
     where: { email: 'admin@skillconnect.pk' },
@@ -88,17 +76,15 @@ async function main() {
       },
       wallet: {
         create: {
-          balance: 50000.0, // Platform escrow / fees balance
+          balance: 100000.0,
         },
       },
     },
   });
-  console.log(`Admin user created: ${admin.email}`);
+  console.log(`Admin user ready: ${admin.email}`);
 
-  // 3. Seed Sample Service Provider (Electrician in Karachi)
+  // 4. Seed Verified Service Provider
   const providerPassword = await bcrypt.hash('ProviderPass@123', 10);
-  const elecCat = await prisma.category.findUnique({ where: { slug: 'electrical-wiring' } });
-
   const providerUser = await prisma.user.upsert({
     where: { email: 'tariq.electrician@gmail.com' },
     update: {},
@@ -116,75 +102,68 @@ async function main() {
           address: 'Gulshan-e-Iqbal Block 13D, Karachi',
           latitude: 24.918,
           longitude: 67.0971,
-          bio: '10+ years experienced electrician specializing in solar inverters, distribution boxes, and residential wiring in Karachi.',
+          bio: 'Licensed electrician with 12+ years experience in solar inverters, DB load balancing, and residential wiring.',
         },
       },
       providerProfile: {
         create: {
           cnicNumber: '42101-1234567-1',
           isVerified: true,
-          hourlyRate: 1500.0, // PKR per hour
+          hourlyRate: 1500.0,
           rating: 4.9,
-          totalReviews: 24,
-          serviceRadiusKm: 20.0,
-          services: {
-            create: [
-              {
-                title: 'Solar & UPS Inverter Wiring',
-                description: 'Complete wiring setup for hybrid solar inverters and battery bank integration.',
-                basePrice: 3500.0, // PKR
-                durationMinutes: 120,
-                categoryId: elecCat!.id,
-              },
-              {
-                title: 'Distribution Box & Breaker Repair',
-                description: 'Circuit breaker diagnosis, main load balancing, and short-circuit repair.',
-                basePrice: 1800.0,
-                durationMinutes: 60,
-                categoryId: elecCat!.id,
-              },
-            ],
-          },
+          totalReviews: 84,
+          serviceRadiusKm: 25.0,
         },
       },
       wallet: {
         create: {
-          balance: 12500.0,
+          balance: 25000.0,
         },
       },
     },
+    include: {
+      providerProfile: true,
+    },
   });
-  console.log(`Provider user created: ${providerUser.email}`);
 
-  // 4. Seed Sample Customer (Karachi)
-  const customerPassword = await bcrypt.hash('CustomerPass@123', 10);
-  const customerUser = await prisma.user.upsert({
-    where: { email: 'aisha.khan@gmail.com' },
-    update: {},
-    create: {
-      email: 'aisha.khan@gmail.com',
-      phone: '+923339876543',
-      passwordHash: customerPassword,
-      role: UserRole.CUSTOMER,
-      status: UserStatus.ACTIVE,
-      profile: {
-        create: {
-          firstName: 'Aisha',
-          lastName: 'Khan',
-          city: 'Karachi',
-          address: 'DHA Phase 6, Karachi',
-          latitude: 24.7937,
-          longitude: 67.0656,
-        },
-      },
-      wallet: {
-        create: {
-          balance: 5000.0,
-        },
-      },
-    },
-  });
-  console.log(`Customer user created: ${customerUser.email}`);
+  const providerProfileId = providerUser.providerProfile?.id;
+
+  // 5. Seed 134 Unique Services attached to database Categories
+  if (providerProfileId) {
+    console.log(`Seeding ${ALL_100_SERVICES.length} Unique Services...`);
+    for (const srv of ALL_100_SERVICES) {
+      const dbCat = await prisma.category.findUnique({
+        where: { slug: srv.category.slug },
+      });
+
+      if (dbCat) {
+        await prisma.service.upsert({
+          where: { id: srv.id },
+          update: {
+            title: srv.title,
+            description: srv.description,
+            basePrice: srv.basePrice,
+            durationMinutes: srv.durationMinutes,
+            isAvailable: srv.isAvailable,
+            categoryId: dbCat.id,
+          },
+          create: {
+            id: srv.id,
+            title: srv.title,
+            description: srv.description,
+            basePrice: srv.basePrice,
+            durationMinutes: srv.durationMinutes,
+            isAvailable: srv.isAvailable,
+            providerId: providerProfileId,
+            categoryId: dbCat.id,
+          },
+        });
+      }
+    }
+  }
+
+  const serviceCount = await prisma.service.count();
+  console.log(`Database Unique Services Count: ${serviceCount}`);
 
   console.log('Seeding completed successfully!');
 }
