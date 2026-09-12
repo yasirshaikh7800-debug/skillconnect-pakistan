@@ -1,0 +1,351 @@
+import { BookingsService } from './bookings.service';
+import { CreateBookingDto } from './dto/create-booking.dto';
+import { UpdateBookingStatusDto } from './dto/update-booking-status.dto';
+import { UserRole } from '@prisma/client';
+export declare class BookingsController {
+    private readonly bookingsService;
+    constructor(bookingsService: BookingsService);
+    createBooking(customerId: string, dto: CreateBookingDto): Promise<{
+        service: {
+            id: string;
+            title: string;
+            description: string;
+            createdAt: Date;
+            updatedAt: Date;
+            basePrice: number;
+            durationMinutes: number;
+            categoryId: string;
+            slug: string;
+            providerId: string;
+            isAvailable: boolean;
+        };
+        chatRoom: {
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            providerId: string;
+            customerId: string;
+            bookingId: string;
+        } | null;
+        provider: {
+            id: string;
+            profile: {
+                latitude: number | null;
+                longitude: number | null;
+                provinceId: string | null;
+                id: string;
+                city: string;
+                firstName: string;
+                lastName: string;
+                createdAt: Date;
+                updatedAt: Date;
+                address: string | null;
+                bio: string | null;
+                cityId: string | null;
+                districtId: string | null;
+                userId: string;
+            } | null;
+            email: string;
+        };
+        customer: {
+            id: string;
+            profile: {
+                latitude: number | null;
+                longitude: number | null;
+                provinceId: string | null;
+                id: string;
+                city: string;
+                firstName: string;
+                lastName: string;
+                createdAt: Date;
+                updatedAt: Date;
+                address: string | null;
+                bio: string | null;
+                cityId: string | null;
+                districtId: string | null;
+                userId: string;
+            } | null;
+            email: string;
+        };
+    } & {
+        latitude: number;
+        longitude: number;
+        id: string;
+        status: import(".prisma/client").$Enums.BookingStatus;
+        createdAt: Date;
+        updatedAt: Date;
+        address: string;
+        serviceId: string;
+        providerId: string;
+        scheduledAt: Date;
+        notes: string | null;
+        bookingCode: string;
+        totalAmount: number;
+        commissionFee: number;
+        providerEarning: number;
+        completedAt: Date | null;
+        cancelledAt: Date | null;
+        customerId: string;
+    }>;
+    getMyBookings(userId: string, role: UserRole): Promise<({
+        service: {
+            id: string;
+            title: string;
+            description: string;
+            createdAt: Date;
+            updatedAt: Date;
+            basePrice: number;
+            durationMinutes: number;
+            categoryId: string;
+            slug: string;
+            providerId: string;
+            isAvailable: boolean;
+        };
+        review: {
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            rating: number;
+            providerId: string;
+            bookingId: string;
+            reviewerId: string;
+            comment: string;
+        } | null;
+        chatRoom: {
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            providerId: string;
+            customerId: string;
+            bookingId: string;
+        } | null;
+        payment: {
+            id: string;
+            status: import(".prisma/client").$Enums.PaymentStatus;
+            createdAt: Date;
+            updatedAt: Date;
+            currency: string;
+            userId: string;
+            bookingId: string;
+            method: import(".prisma/client").$Enums.PaymentMethod;
+            amount: number;
+            transactionId: string | null;
+            metadataJson: string | null;
+        } | null;
+        provider: {
+            id: string;
+            profile: {
+                latitude: number | null;
+                longitude: number | null;
+                provinceId: string | null;
+                id: string;
+                city: string;
+                firstName: string;
+                lastName: string;
+                createdAt: Date;
+                updatedAt: Date;
+                address: string | null;
+                bio: string | null;
+                cityId: string | null;
+                districtId: string | null;
+                userId: string;
+            } | null;
+            email: string;
+            phone: string | null;
+        };
+        customer: {
+            id: string;
+            profile: {
+                latitude: number | null;
+                longitude: number | null;
+                provinceId: string | null;
+                id: string;
+                city: string;
+                firstName: string;
+                lastName: string;
+                createdAt: Date;
+                updatedAt: Date;
+                address: string | null;
+                bio: string | null;
+                cityId: string | null;
+                districtId: string | null;
+                userId: string;
+            } | null;
+            email: string;
+            phone: string | null;
+        };
+    } & {
+        latitude: number;
+        longitude: number;
+        id: string;
+        status: import(".prisma/client").$Enums.BookingStatus;
+        createdAt: Date;
+        updatedAt: Date;
+        address: string;
+        serviceId: string;
+        providerId: string;
+        scheduledAt: Date;
+        notes: string | null;
+        bookingCode: string;
+        totalAmount: number;
+        commissionFee: number;
+        providerEarning: number;
+        completedAt: Date | null;
+        cancelledAt: Date | null;
+        customerId: string;
+    })[]>;
+    getBookingById(bookingId: string, userId: string): Promise<{
+        service: {
+            id: string;
+            title: string;
+            description: string;
+            createdAt: Date;
+            updatedAt: Date;
+            basePrice: number;
+            durationMinutes: number;
+            categoryId: string;
+            slug: string;
+            providerId: string;
+            isAvailable: boolean;
+        };
+        review: {
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            rating: number;
+            providerId: string;
+            bookingId: string;
+            reviewerId: string;
+            comment: string;
+        } | null;
+        chatRoom: {
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            providerId: string;
+            customerId: string;
+            bookingId: string;
+        } | null;
+        payment: {
+            id: string;
+            status: import(".prisma/client").$Enums.PaymentStatus;
+            createdAt: Date;
+            updatedAt: Date;
+            currency: string;
+            userId: string;
+            bookingId: string;
+            method: import(".prisma/client").$Enums.PaymentMethod;
+            amount: number;
+            transactionId: string | null;
+            metadataJson: string | null;
+        } | null;
+        provider: {
+            id: string;
+            profile: {
+                latitude: number | null;
+                longitude: number | null;
+                provinceId: string | null;
+                id: string;
+                city: string;
+                firstName: string;
+                lastName: string;
+                createdAt: Date;
+                updatedAt: Date;
+                address: string | null;
+                bio: string | null;
+                cityId: string | null;
+                districtId: string | null;
+                userId: string;
+            } | null;
+            email: string;
+            phone: string | null;
+        };
+        customer: {
+            id: string;
+            profile: {
+                latitude: number | null;
+                longitude: number | null;
+                provinceId: string | null;
+                id: string;
+                city: string;
+                firstName: string;
+                lastName: string;
+                createdAt: Date;
+                updatedAt: Date;
+                address: string | null;
+                bio: string | null;
+                cityId: string | null;
+                districtId: string | null;
+                userId: string;
+            } | null;
+            email: string;
+            phone: string | null;
+        };
+    } & {
+        latitude: number;
+        longitude: number;
+        id: string;
+        status: import(".prisma/client").$Enums.BookingStatus;
+        createdAt: Date;
+        updatedAt: Date;
+        address: string;
+        serviceId: string;
+        providerId: string;
+        scheduledAt: Date;
+        notes: string | null;
+        bookingCode: string;
+        totalAmount: number;
+        commissionFee: number;
+        providerEarning: number;
+        completedAt: Date | null;
+        cancelledAt: Date | null;
+        customerId: string;
+    }>;
+    updateStatus(bookingId: string, userId: string, dto: UpdateBookingStatusDto): Promise<{
+        service: {
+            id: string;
+            title: string;
+            description: string;
+            createdAt: Date;
+            updatedAt: Date;
+            basePrice: number;
+            durationMinutes: number;
+            categoryId: string;
+            slug: string;
+            providerId: string;
+            isAvailable: boolean;
+        };
+        payment: {
+            id: string;
+            status: import(".prisma/client").$Enums.PaymentStatus;
+            createdAt: Date;
+            updatedAt: Date;
+            currency: string;
+            userId: string;
+            bookingId: string;
+            method: import(".prisma/client").$Enums.PaymentMethod;
+            amount: number;
+            transactionId: string | null;
+            metadataJson: string | null;
+        } | null;
+    } & {
+        latitude: number;
+        longitude: number;
+        id: string;
+        status: import(".prisma/client").$Enums.BookingStatus;
+        createdAt: Date;
+        updatedAt: Date;
+        address: string;
+        serviceId: string;
+        providerId: string;
+        scheduledAt: Date;
+        notes: string | null;
+        bookingCode: string;
+        totalAmount: number;
+        commissionFee: number;
+        providerEarning: number;
+        completedAt: Date | null;
+        cancelledAt: Date | null;
+        customerId: string;
+    }>;
+}

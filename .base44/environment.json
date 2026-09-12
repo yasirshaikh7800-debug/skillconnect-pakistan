@@ -1,0 +1,17 @@
+{
+  "previewPort": 3000,
+  "healthPath": "/",
+  "startCommand": "docker compose -f docker-compose.base44.yml up -d",
+  "secrets": [
+    {
+      "name": "GEMINI_API_KEY",
+      "description": "Google Gemini API key for AI features (assistant, career roadmap, skill matcher, profile assistant). Optional — AI features fall back to mock responses without it. Get it from https://aistudio.google.com/apikey",
+      "requiredAtBoot": false
+    },
+    {
+      "name": "STRIPE_SECRET_KEY",
+      "description": "Stripe secret key for payment processing. Optional — uses a mock key without it. Get it from https://dashboard.stripe.com/apikeys",
+      "requiredAtBoot": false
+    }
+  ]
+}

@@ -1,0 +1,53 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: skillconnect
+      POSTGRES_PASSWORD: skillconnect_dev
+      POSTGRES_DB: skillconnect
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U skillconnect"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    image: node:22
+    working_dir: /app/apps/backend
+    volumes:
+      - ./:/app
+      - backend_node_modules:/app/apps/backend/node_modules
+    environment:
+      - DATABASE_URL=postgresql://skillconnect:skillconnect_dev@db:5432/skillconnect
+      - PORT=4000
+      - BASE44_PUBLIC_HOST_SUFFIX=${BASE44_PUBLIC_HOST_SUFFIX}
+    env_file:
+      - /run/base44/app.env
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "4000:4000"
+    command: sh -c "npm install && npx prisma generate && npx prisma migrate deploy && npm run prisma:seed && npm run start:dev"
+
+  frontend:
+    image: node:22
+    working_dir: /app/apps/frontend
+    volumes:
+      - ./:/app
+      - frontend_node_modules:/app/apps/frontend/node_modules
+    environment:
+      - NEXT_PUBLIC_API_URL=https://4000-${BASE44_PUBLIC_HOST_SUFFIX}/api/v1
+      - BACKEND_URL=http://backend:4000
+      - BASE44_PUBLIC_HOST_SUFFIX=${BASE44_PUBLIC_HOST_SUFFIX}
+    env_file:
+      - /run/base44/app.env
+    depends_on:
+      - backend
+    ports:
+      - "3000:3000"
+    command: sh -c "npm install && npx next dev -H 0.0.0.0 -p 3000"
+
+volumes:
+  backend_node_modules:
+  frontend_node_modules:

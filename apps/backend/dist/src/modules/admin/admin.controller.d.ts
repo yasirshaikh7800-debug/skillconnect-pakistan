@@ -1,0 +1,95 @@
+import { AdminService } from './admin.service';
+export declare class AdminController {
+    private readonly adminService;
+    constructor(adminService: AdminService);
+    getStats(): Promise<{
+        totalUsers: number;
+        totalProviders: number;
+        totalBookings: number;
+        completedBookings: number;
+        pendingVerifications: number;
+        grossVolume: number;
+        platformRevenueFee: number;
+    }>;
+    getUnverifiedProviders(): Promise<({
+        user: {
+            id: string;
+            profile: {
+                latitude: number | null;
+                longitude: number | null;
+                provinceId: string | null;
+                id: string;
+                city: string;
+                firstName: string;
+                lastName: string;
+                createdAt: Date;
+                updatedAt: Date;
+                address: string | null;
+                bio: string | null;
+                cityId: string | null;
+                districtId: string | null;
+                userId: string;
+            } | null;
+            email: string;
+            phone: string | null;
+            createdAt: Date;
+        };
+    } & {
+        id: string;
+        cnicNumber: string;
+        createdAt: Date;
+        updatedAt: Date;
+        isVerified: boolean;
+        hourlyRate: number;
+        rating: number;
+        totalReviews: number;
+        serviceRadiusKm: number;
+        availabilityJson: string | null;
+        cnicFrontUrl: string | null;
+        cnicBackUrl: string | null;
+        companyId: string | null;
+        userId: string;
+    })[]>;
+    verifyProvider(providerProfileId: string, body: {
+        verify: boolean;
+    }): Promise<{
+        success: boolean;
+        message: string;
+        provider: {
+            user: {
+                profile: {
+                    latitude: number | null;
+                    longitude: number | null;
+                    provinceId: string | null;
+                    id: string;
+                    city: string;
+                    firstName: string;
+                    lastName: string;
+                    createdAt: Date;
+                    updatedAt: Date;
+                    address: string | null;
+                    bio: string | null;
+                    cityId: string | null;
+                    districtId: string | null;
+                    userId: string;
+                } | null;
+                email: string;
+            };
+        } & {
+            id: string;
+            cnicNumber: string;
+            createdAt: Date;
+            updatedAt: Date;
+            isVerified: boolean;
+            hourlyRate: number;
+            rating: number;
+            totalReviews: number;
+            serviceRadiusKm: number;
+            availabilityJson: string | null;
+            cnicFrontUrl: string | null;
+            cnicBackUrl: string | null;
+            companyId: string | null;
+            userId: string;
+        };
+    }>;
+}
