@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import dynamic from 'next/dynamic';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -10,6 +11,10 @@ import { useAuth } from '@/context/AuthContext';
 import { ApiRequestError, api } from '@/lib/api';
 import { cn, formatPKR } from '@/lib/utils';
 import type { ServiceItem } from '@/lib/types';
+
+const BookingSuccess3DModal = dynamic(() => import('./BookingSuccess3DModal'), {
+  ssr: false,
+});
 
 const bookingSchema = z.object({
   scheduledAt: z.string().min(1, 'Choose a date and time'),
@@ -29,6 +34,7 @@ export function BookingFlow({ service }: BookingFlowProps) {
   const [statusMessage, setStatusMessage] = useState('');
   const [error, setError] = useState('');
   const [paymentMethod, setPaymentMethod] = useState<'STRIPE' | 'CASH_ON_DELIVERY'>('STRIPE');
+  const [successModal, setSuccessModal] = useState<{ bookingCode: string; serviceTitle: string } | null>(null);
 
   const {
     register,
@@ -57,7 +63,7 @@ export function BookingFlow({ service }: BookingFlowProps) {
     }
 
     try {
-      const booking = await api<{ id: string }>('/bookings', {
+      const booking = await api<{ id: string; bookingCode: string; service: { title: string } }>('/bookings', {
         method: 'POST',
         body: JSON.stringify({
           serviceId: service.id,
@@ -78,7 +84,10 @@ export function BookingFlow({ service }: BookingFlowProps) {
       });
 
       setStatusMessage(`${payment.message} Your booking request has been submitted.`);
-      router.push('/bookings');
+      setSuccessModal({
+        bookingCode: booking.bookingCode,
+        serviceTitle: booking.service?.title || service.title,
+      });
     } catch (err) {
       setError(err instanceof ApiRequestError ? err.message : 'Unable to create the booking right now.');
     }
@@ -195,6 +204,17 @@ export function BookingFlow({ service }: BookingFlowProps) {
           Request Booking
         </button>
       </form>
+
+      {successModal && (
+        <BookingSuccess3DModal
+          bookingCode={successModal.bookingCode}
+          serviceTitle={successModal.serviceTitle}
+          onClose={() => {
+            setSuccessModal(null);
+            router.push('/bookings');
+          }}
+        />
+      )}
     </div>
   );
 }

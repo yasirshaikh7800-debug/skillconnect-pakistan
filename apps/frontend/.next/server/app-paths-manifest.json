@@ -3,11 +3,7 @@
   "/services/page": "app/services/page.js",
   "/login/page": "app/login/page.js",
   "/dashboard/customer/page": "app/dashboard/customer/page.js",
-  "/search/page": "app/search/page.js",
-  "/register/page": "app/register/page.js",
-  "/bookings/page": "app/bookings/page.js",
   "/wallet/page": "app/wallet/page.js",
-  "/reviews/page": "app/reviews/page.js",
-  "/notifications/page": "app/notifications/page.js",
-  "/ai-hub/page": "app/ai-hub/page.js"
+  "/services/[serviceId]/page": "app/services/[serviceId]/page.js",
+  "/bookings/page": "app/bookings/page.js"
 }

@@ -287,6 +287,20 @@ export default function ThreeHero3D() {
     );
   }
 
+  if (!webglSupported) {
+    return (
+      <div className="relative w-full h-80 sm:h-[400px] rounded-3xl overflow-hidden border border-emerald-500/30 bg-gradient-to-br from-slate-950 via-slate-900 to-emerald-950/40 flex flex-col items-center justify-center text-center p-6">
+        <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-500/20 to-cyan-500/10 mb-4">
+          <Orbit className="h-8 w-8 text-emerald-400" />
+        </div>
+        <h3 className="text-lg font-semibold text-white">SkillConnect 3D Marketplace</h3>
+        <p className="mt-2 max-w-xs text-sm text-slate-400">
+          Explore verified service providers across Pakistan. Your browser does not support 3D — browse services instead.
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="relative w-full h-80 sm:h-[400px] rounded-3xl overflow-hidden border border-emerald-500/30 bg-slate-950/80 shadow-2xl glow-cyan-emerald group">
       {viewMode === 'map' ? (

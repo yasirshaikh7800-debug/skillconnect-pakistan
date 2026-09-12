@@ -1,6 +1,7 @@
 ﻿'use client';
 
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
 import { motion } from 'framer-motion';
 import {
   ShieldCheck,
@@ -60,6 +61,15 @@ const STEPS = [
   { title: 'Book with confidence', description: 'Secure payments and live updates keep every visit stress-free.' },
 ];
 
+const Hero3D = dynamic(() => import('@/components/ThreeHero3D'), {
+  ssr: false,
+  loading: () => (
+    <div className="w-full h-80 sm:h-[400px] rounded-3xl bg-slate-950/80 border border-emerald-500/30 animate-pulse flex items-center justify-center text-slate-500 text-xs">
+      Loading 3D Experience...
+    </div>
+  ),
+});
+
 export default function HomePage() {
   return (
     <div className="flex flex-col">
@@ -109,40 +119,15 @@ export default function HomePage() {
             </motion.div>
 
             <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.1 }} className="relative">
-              <div className="glass-panel rounded-[2rem] p-4 shadow-2xl shadow-black/20">
-                <div className="rounded-[1.5rem] border border-white/10 bg-slate-950/70 p-4 backdrop-blur-xl">
-                  <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-slate-200">
-                    <span className="font-medium">Featured this week</span>
-                    <span className="rounded-full bg-emerald-500/20 px-2.5 py-1 text-xs text-emerald-200">Live</span>
+              <Hero3D />
+              <div className="mt-4 rounded-[1.5rem] border border-emerald-500/20 bg-gradient-to-r from-emerald-500/15 to-cyan-500/10 p-4 backdrop-blur-xl">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-slate-300">Trusted by 4,000+ homeowners</p>
+                    <p className="mt-1 text-2xl font-semibold text-white">4.9/5 average rating</p>
                   </div>
-
-                  <div className="mt-4 grid gap-3">
-                    {[
-                      { title: 'Premium AC servicing', price: 'PKR 2,500', caption: 'Fast response • Verified specialist' },
-                      { title: 'Home electrical inspection', price: 'PKR 1,800', caption: 'Safe & certified' },
-                    ].map((item) => (
-                      <div key={item.title} className="rounded-2xl border border-white/10 bg-white/5 p-4">
-                        <div className="flex items-center justify-between gap-3">
-                          <div>
-                            <p className="font-semibold text-white">{item.title}</p>
-                            <p className="mt-1 text-sm text-slate-400">{item.caption}</p>
-                          </div>
-                          <div className="rounded-full bg-brand-500/15 px-3 py-1 text-sm font-semibold text-brand-200">{item.price}</div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-
-                  <div className="mt-4 rounded-[1.5rem] border border-emerald-500/20 bg-gradient-to-r from-emerald-500/15 to-cyan-500/10 p-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm font-medium text-slate-300">Trusted by 4,000+ homeowners</p>
-                        <p className="mt-1 text-2xl font-semibold text-white">4.9/5 average rating</p>
-                      </div>
-                      <div className="rounded-2xl bg-white/10 p-3">
-                        <BadgeCheck className="h-6 w-6 text-emerald-300" />
-                      </div>
-                    </div>
+                  <div className="rounded-2xl bg-white/10 p-3">
+                    <BadgeCheck className="h-6 w-6 text-emerald-300" />
                   </div>
                 </div>
               </div>
