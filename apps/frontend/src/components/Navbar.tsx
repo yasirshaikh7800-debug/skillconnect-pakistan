@@ -144,11 +144,11 @@ export function Navbar() {
       {mobileMenuOpen && (
         <div className="border-t border-slate-200 bg-slate-950/95 px-4 py-4 md:hidden">
           <div className="space-y-3">
-            <Link href="/services" className="block py-2 font-medium text-slate-300 transition hover:text-brand-400">
+            <Link href="/services" onClick={() => setMobileMenuOpen(false)} className="block py-2 font-medium text-slate-300 transition hover:text-brand-400">
               Services
             </Link>
             {isAuthenticated && (
-              <Link href={dashboardHref} className="block py-2 font-medium text-slate-300 transition hover:text-brand-400">
+              <Link href={dashboardHref} onClick={() => setMobileMenuOpen(false)} className="block py-2 font-medium text-slate-300 transition hover:text-brand-400">
                 Dashboard
               </Link>
             )}
@@ -158,10 +158,10 @@ export function Navbar() {
               </button>
             ) : (
               <>
-                <Link href="/login" className="block rounded-2xl border border-slate-700 py-2.5 text-center font-medium text-white">
+                <Link href="/login" onClick={() => setMobileMenuOpen(false)} className="block rounded-2xl border border-slate-700 py-2.5 text-center font-medium text-white">
                   Log In
                 </Link>
-                <Link href="/register?role=PROVIDER" className="block rounded-2xl bg-brand-600 py-2.5 text-center font-semibold text-white">
+                <Link href="/register?role=PROVIDER" onClick={() => setMobileMenuOpen(false)} className="block rounded-2xl bg-brand-600 py-2.5 text-center font-semibold text-white">
                   Register as Provider
                 </Link>
               </>

@@ -1,6 +1,7 @@
 'use client';
 
 import { AuthGuard } from '@/components/AuthGuard';
+import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { CalendarClock, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
 import { api } from '@/lib/api';
@@ -35,6 +36,8 @@ export default function BookingsPage() {
     staleTime: 30_000,
   });
 
+  const [mutationError, setMutationError] = useState('');
+
   const updateMutation = useMutation({
     mutationFn: async ({ bookingId, status }: { bookingId: string; status: BookingItem['status'] }) => {
       return api(`/bookings/${bookingId}/status`, {
@@ -43,7 +46,11 @@ export default function BookingsPage() {
       });
     },
     onSuccess: () => {
+      setMutationError('');
       queryClient.invalidateQueries({ queryKey: ['bookings'] });
+    },
+    onError: (err: unknown) => {
+      setMutationError(err instanceof Error ? err.message : 'Unable to update booking status.');
     },
   });
 
@@ -86,28 +93,68 @@ export default function BookingsPage() {
                   <span className="flex items-center gap-1.5"><AlertCircle className="h-4 w-4" /> {booking.provider?.email || booking.customer?.email}</span>
                 </div>
 
+                {mutationError && (
+                  <div className="mt-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700 dark:border-red-800 dark:bg-red-950/30 dark:text-red-300">
+                    {mutationError}
+                  </div>
+                )}
+
                 <div className="mt-5 flex flex-wrap gap-3">
-                  <button
-                    type="button"
-                    onClick={() => updateMutation.mutate({ bookingId: booking.id, status: 'ACCEPTED' })}
-                    className="rounded-lg border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 transition-colors hover:border-brand-500 hover:text-brand-600 dark:border-slate-700 dark:text-slate-300"
-                  >
-                    Accept request
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => updateMutation.mutate({ bookingId: booking.id, status: 'CANCELLED' })}
-                    className="rounded-lg border border-red-200 px-3 py-2 text-sm font-medium text-red-700 transition-colors hover:bg-red-50 dark:border-red-800 dark:text-red-400"
-                  >
-                    Cancel booking
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => updateMutation.mutate({ bookingId: booking.id, status: 'COMPLETED' })}
-                    className="rounded-lg bg-brand-600 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-brand-500"
-                  >
-                    Mark complete
-                  </button>
+                  {booking.status === 'PENDING' && (
+                    <>
+                      <button
+                        type="button"
+                        disabled={updateMutation.isPending}
+                        onClick={() => updateMutation.mutate({ bookingId: booking.id, status: 'ACCEPTED' })}
+                        className="rounded-lg bg-brand-600 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-brand-500 disabled:opacity-60"
+                      >
+                        Accept request
+                      </button>
+                      <button
+                        type="button"
+                        disabled={updateMutation.isPending}
+                        onClick={() => updateMutation.mutate({ bookingId: booking.id, status: 'CANCELLED' })}
+                        className="rounded-lg border border-red-200 px-3 py-2 text-sm font-medium text-red-700 transition-colors hover:bg-red-50 dark:border-red-800 dark:text-red-400 disabled:opacity-60"
+                      >
+                        Cancel booking
+                      </button>
+                    </>
+                  )}
+                  {booking.status === 'ACCEPTED' && (
+                    <>
+                      <button
+                        type="button"
+                        disabled={updateMutation.isPending}
+                        onClick={() => updateMutation.mutate({ bookingId: booking.id, status: 'IN_PROGRESS' })}
+                        className="rounded-lg bg-brand-600 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-brand-500 disabled:opacity-60"
+                      >
+                        Start visit
+                      </button>
+                      <button
+                        type="button"
+                        disabled={updateMutation.isPending}
+                        onClick={() => updateMutation.mutate({ bookingId: booking.id, status: 'CANCELLED' })}
+                        className="rounded-lg border border-red-200 px-3 py-2 text-sm font-medium text-red-700 transition-colors hover:bg-red-50 dark:border-red-800 dark:text-red-400 disabled:opacity-60"
+                      >
+                        Cancel booking
+                      </button>
+                    </>
+                  )}
+                  {booking.status === 'IN_PROGRESS' && (
+                    <button
+                      type="button"
+                      disabled={updateMutation.isPending}
+                      onClick={() => updateMutation.mutate({ bookingId: booking.id, status: 'COMPLETED' })}
+                      className="rounded-lg bg-brand-600 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-brand-500 disabled:opacity-60"
+                    >
+                      Mark complete
+                    </button>
+                  )}
+                  {(booking.status === 'COMPLETED' || booking.status === 'CANCELLED') && (
+                    <span className="text-sm text-slate-500 dark:text-slate-400">
+                      {booking.status === 'COMPLETED' ? 'This booking is complete.' : 'This booking was cancelled.'}
+                    </span>
+                  )}
                 </div>
               </article>
             ))}
